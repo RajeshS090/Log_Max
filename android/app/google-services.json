@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "356118203461",
+    "project_id": "logmx-b52fc",
+    "storage_bucket": "logmx-b52fc.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:356118203461:android:dd98c8c7170c8a0103272c",
+        "android_client_info": {
+          "package_name": "com.example.logmax"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB1ZBCfNBNXoWD8OhTwljO3maqPTzMqb6k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
