@@ -85,27 +85,30 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
   }
 
   void _checkAndSendOtp() async {
+    print('Searching for mobile number: ${_mobileController.text}');
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Check if the mobile number exists in Firestore
+      String formattedMobile = '+91${_mobileController.text}'; // Ensure the correct format
+
       QuerySnapshot querySnapshot = await _firestore
           .collection('users')
-          .where('mobile', isEqualTo: _mobileController.text)
+          .where('mobile', isEqualTo: formattedMobile)
           .limit(1)
           .get();
-
+      querySnapshot.docs.forEach((doc) {
+        print('Document ID: ${doc.id}');
+        print('Document data: ${doc.data()}');
+        print('Document exists: ${doc.exists}');
+      });
       if (querySnapshot.docs.isNotEmpty) {
-        // Mobile number exists, proceed with sending OTP
         await _auth.verifyPhoneNumber(
-          phoneNumber: '+91${_mobileController.text}', // Replace with your country code and mobile number format
+          phoneNumber: formattedMobile,
           timeout: const Duration(seconds: 60),
           verificationCompleted: (PhoneAuthCredential credential) async {
-            // Auto-retrieve OTP on Android
             await _auth.signInWithCredential(credential);
-            // Handle verification success
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('OTP verification successful')),
             );
@@ -128,12 +131,13 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             ScaffoldMessenger.of(context).showSnackBar(
               const SnackBar(content: Text('OTP sent successfully')),
             );
-            // Navigate to OTP verification screen
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) =>
-                    OtpVerificationScreen(verificationId: verificationId, phoneNumber: '+91${_mobileController.text}',),
+                builder: (context) => OtpVerificationScreen(
+                  verificationId: verificationId,
+                  phoneNumber: formattedMobile,
+                ),
               ),
             );
           },
@@ -169,23 +173,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       );
     }
   }
+
+
 }
 class OtpVerificationScreen extends StatefulWidget {
-  var verificationId;
-  var phoneNumber;
+  final String verificationId;
+  final String phoneNumber;
 
-   OtpVerificationScreen({super.key, required this.verificationId, required this.phoneNumber});
+  OtpVerificationScreen({super.key, required this.verificationId, required this.phoneNumber});
 
   @override
   _OtpVerificationScreenState createState() => _OtpVerificationScreenState();
 }
 
-class _OtpVerificationScreenState extends State<OtpVerificationScreen>
-    with CodeAutoFill {
+class _OtpVerificationScreenState extends State<OtpVerificationScreen> with CodeAutoFill {
   final FirebaseAuth _auth = FirebaseAuth.instance;
   bool _isLoading = false;
   String _otpCode = '';
-  bool _isResending = false;
 
   @override
   void initState() {
@@ -208,6 +212,55 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
   void dispose() {
     cancel();
     super.dispose();
+  }
+
+  void _verifyOtp() async {
+    if (_otpCode.isEmpty || _otpCode.length < 6) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a valid OTP')),
+      );
+      return;
+    }
+
+    setState(() {
+      _isLoading = true;
+    });
+
+    try {
+      PhoneAuthCredential credential = PhoneAuthProvider.credential(
+        verificationId: widget.verificationId,
+        smsCode: _otpCode,
+      );
+
+      await _auth.signInWithCredential(credential);
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('OTP verification successful')),
+      );
+
+      // After OTP verification, proceed to the change password screen
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ChangePasswordScreen(phoneNumber: widget.phoneNumber),
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text('Failed to verify OTP: $e'),
+        ),
+      );
+    }
   }
 
   @override
@@ -278,121 +331,10 @@ class _OtpVerificationScreenState extends State<OtpVerificationScreen>
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-              TextButton(
-                onPressed: _isResending ? null : _resendOtp,
-                child: Text(
-                  _isResending ? 'Resending...' : 'Resend OTP',
-                  style: GoogleFonts.workSans(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: _isResending
-                        ? Colors.grey
-                        : appColor,
-                  ),
-                ),
-              ),
             ],
           ),
         ),
       ),
     );
-  }
-
-  void _verifyOtp() async {
-    if (_otpCode.isEmpty || _otpCode.length < 6) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Please enter a valid OTP')),
-      );
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      PhoneAuthCredential credential = PhoneAuthProvider.credential(
-        verificationId: widget.verificationId,
-        smsCode: _otpCode,
-      );
-
-      await _auth.signInWithCredential(credential);
-
-      setState(() {
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('OTP verification successful')),
-      );
-
-      // After OTP verification, proceed to the change password screen
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) =>
-              ChangePasswordScreen(userId: widget.verificationId),
-        ),
-      );
-    } catch (e) {
-      setState(() {
-        _isLoading = false;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text('Failed to verify OTP: $e'),
-        ),
-      );
-    }
-  }
-
-  void _resendOtp() async {
-    setState(() {
-      _isResending = true;
-    });
-
-    try {
-      await _auth.verifyPhoneNumber(
-        phoneNumber: widget.phoneNumber,
-        verificationCompleted: (PhoneAuthCredential credential) async {
-          await _auth.signInWithCredential(credential);
-        },
-        verificationFailed: (FirebaseAuthException e) {
-          setState(() {
-            _isResending = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              backgroundColor: Colors.red,
-              content: Text('Failed to resend OTP: ${e.message}'),
-            ),
-          );
-        },
-        codeSent: (String verificationId, int? resendToken) {
-          setState(() {
-            _isResending = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('OTP resent successfully')),
-          );
-          // Update the verification ID with the new one
-          widget.verificationId = verificationId;
-        },
-        codeAutoRetrievalTimeout: (String verificationId) {},
-      );
-    } catch (e) {
-      setState(() {
-        _isResending = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          backgroundColor: Colors.red,
-          content: Text('Failed to resend OTP: $e'),
-        ),
-      );
-    }
   }
 }

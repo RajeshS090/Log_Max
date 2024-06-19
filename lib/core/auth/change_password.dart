@@ -1,52 +1,22 @@
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:logmax/core/auth/sign_up_screen.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChangePasswordScreen extends StatefulWidget {
-  final String userId;
+  final String phoneNumber;
 
-  const ChangePasswordScreen({Key? key, required this.userId}) : super(key: key);
+  ChangePasswordScreen({required this.phoneNumber});
 
   @override
   _ChangePasswordScreenState createState() => _ChangePasswordScreenState();
 }
 
 class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
-  final TextEditingController _newPasswordController = TextEditingController();
   final FirebaseAuth _auth = FirebaseAuth.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final TextEditingController _newPasswordController = TextEditingController();
   bool _isLoading = false;
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Change Password'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(20.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            TextField(
-              controller: _newPasswordController,
-              obscureText: true,
-              decoration: const InputDecoration(
-                hintText: 'Enter new password',
-                labelText: 'New Password',
-              ),
-            ),
-            const SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _isLoading ? null : _changePassword,
-              child: Text(_isLoading ? 'Changing Password...' : 'Change Password'),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   void _changePassword() async {
     setState(() {
@@ -54,39 +24,30 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
     });
 
     try {
+      // Ensure the user is signed in
       User? user = _auth.currentUser;
-
-      if (user != null) {
-        await user.updatePassword(_newPasswordController.text);
-
-        await FirebaseFirestore.instance
-            .collection('users')
-            .doc(user.uid)
-            .update({'password': _newPasswordController.text});
-
-        print(user.uid);
-
-        setState(() {
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Password changed successfully')),
-        );
-
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => const AuthScreen()),
-        );
-      } else {
-        setState(() {
-          _isLoading = false;
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User not found. Please login again.')),
-        );
+      if (user == null) {
+        throw 'User not signed in';
       }
+
+      // Update the password in Firebase Authentication
+      await user.updatePassword(_newPasswordController.text);
+
+      setState(() {
+        _isLoading = false;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Password changed successfully')),
+      );
+
+      // Sign out the user after password change
+      await _auth.signOut();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.clear();
+
+      // Navigate to login screen or another appropriate screen
+      Navigator.pop(context); // Assuming you want to go back to the previous screen
     } catch (e) {
       setState(() {
         _isLoading = false;
@@ -99,5 +60,40 @@ class _ChangePasswordScreenState extends State<ChangePasswordScreen> {
         ),
       );
     }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Change Password'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(20.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Enter your new password:',
+              style: TextStyle(fontSize: 18),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: _newPasswordController,
+              obscureText: true,
+              decoration: InputDecoration(
+                hintText: 'New Password',
+                border: OutlineInputBorder(),
+              ),
+            ),
+            const SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _isLoading ? null : _changePassword,
+              child: _isLoading ? CircularProgressIndicator() : Text('Change Password'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

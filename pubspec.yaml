@@ -54,6 +54,7 @@ dependencies:
   firebase_auth: ^5.1.0
   flutter_otp_text_field: ^1.1.3+2
   sms_autofill: ^2.4.0
+  flutter_stepindicator: ^0.1.7
 
 dev_dependencies:
   flutter_lints: ^3.0.0

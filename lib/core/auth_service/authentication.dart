@@ -28,7 +28,15 @@ class AuthMethod {
         return 'Error: The mobile number is already in use';
       }
 
-      await addUserToFirestore(userCredential.user!.uid, email, name, mobile, password);
+      // Add country code to the mobile number before saving
+      String formattedMobile = '+91' + mobile;
+      await addUserToFirestore(
+        userId: userCredential.user!.uid,
+        email: email,
+        name: name,
+        mobile: formattedMobile,
+        password: password,
+      );
 
       return 'success';
     } on FirebaseAuthException catch (e) {
@@ -43,13 +51,13 @@ class AuthMethod {
     return querySnapshot.docs.isNotEmpty;
   }
 
-  Future<void> addUserToFirestore(
-      String userId,
-      String email,
-      String name,
-      String mobile,
-      String password,
-      ) async {
+  Future<void> addUserToFirestore({
+    required String userId,
+    required String email,
+    required String name,
+    required String mobile,
+    required String password,
+  }) async {
     try {
       CollectionReference users = _firestore.collection('users');
       await users.doc(userId).set({
@@ -82,38 +90,34 @@ class AuthMethod {
     required String mobile,
     required String password,
   }) async {
-    String res = "Some error occurred";
     try {
       if (mobile.isNotEmpty && password.isNotEmpty) {
         QuerySnapshot querySnapshot = await _firestore.collection('users').where('mobile', isEqualTo: mobile).get();
 
         if (querySnapshot.docs.isNotEmpty) {
           var userDoc = querySnapshot.docs.first;
-          if (userDoc['password'] == password) {
-            await _auth.signInWithEmailAndPassword(
-              email: userDoc['email'],
-              password: password,
-            );
-            // Store user data in shared_preferences
-            SharedPreferences prefs = await SharedPreferences.getInstance();
-            await prefs.setString('userId', userDoc.id);
-            await prefs.setString('userType', 'user'); // Assuming userType is 'user', adjust as necessary
-            res = "success";
-          } else {
-            res = 'Wrong password provided.';
-          }
+          UserCredential userCredential = await _auth.signInWithEmailAndPassword(
+            email: userDoc['email'],
+            password: password,
+          );
+
+          // Store user data in shared_preferences
+          SharedPreferences prefs = await SharedPreferences.getInstance();
+          await prefs.setString('userId', userDoc.id);
+          await prefs.setString('userType', 'user'); // Assuming userType is 'user', adjust as necessary
+
+          return "success";
         } else {
-          res = 'No user found for that mobile number.';
+          return 'No user found for that mobile number.';
         }
       } else {
-        res = "Please enter all fields";
+        return "Please enter all fields";
       }
     } on FirebaseAuthException catch (e) {
-      res = e.message ?? 'An unknown error occurred';
+      return e.message ?? 'An unknown error occurred';
     } catch (e) {
-      res = 'An unknown error occurred';
+      return 'An unknown error occurred';
     }
-    return res;
   }
 
   Future<void> signOut() async {

@@ -781,14 +781,18 @@ class _AuthScreenState extends State<AuthScreen> {
     setState(() {
       _isLoading = true;
     });
-    // signup user using our auth method
+    String formattedMobile = '+91${loginMobileController.text}';
     String res = await AuthMethod().loginUser(
-    mobile: loginMobileController.text,password: loginPasswordController.text,);
+      mobile: formattedMobile,
+      password: loginPasswordController.text,
+    );
+    print(formattedMobile);
+    print(loginPasswordController.text);
     if (res == "success") {
       setState(() {
         _isLoading = false;
       });
-      //navigate to the home screen
+      // Navigate to the home screen
       Navigator.of(context).pushReplacement(
         MaterialPageRoute(
           builder: (context) => const BottomBar(tabIndex: 0),
@@ -802,5 +806,7 @@ class _AuthScreenState extends State<AuthScreen> {
       print(res);
     }
   }
+
+
 
 }

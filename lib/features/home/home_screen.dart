@@ -1,8 +1,10 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:flutter_stepindicator/flutter_stepindicator.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:geocoding/geocoding.dart';
@@ -107,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             children: [
               Expanded(  // This ensures the container takes up available space dynamically
-                flex: 4,  // Adjust the flex value as needed
+                flex: 4,
                 child: Stack(
                   children: [
                     Container(
@@ -213,8 +215,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Text(
                                           'My Shipment',
                                           style: GoogleFonts.workSans(
-                                            color: Colors.black,
-                                            fontSize: 16,
+                                            color: const Color.fromRGBO(0, 0, 0, 1),
+                                            fontSize: 14,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -253,8 +255,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Text(
                                           'Track Courier',
                                           style: GoogleFonts.workSans(
-                                            color: Colors.black,
-                                            fontSize: 16,
+                                            color: const Color.fromRGBO(0, 0, 0, 1),
+                                            fontSize: 14,
                                             fontWeight: FontWeight.w500,
                                           ),
                                         ),
@@ -272,8 +274,8 @@ class _HomeScreenState extends State<HomeScreen> {
                             child: Text(
                               'Recent Orders',
                               style: GoogleFonts.workSans(
-                                color: Colors.black,
-                                fontSize: 18,
+                                color: const Color.fromRGBO(0, 0, 0, 1),
+                                fontSize: 16,
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -309,7 +311,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                             color: const Color.fromRGBO(255, 250, 230, 1),
                                             borderRadius: BorderRadius.circular(25),
                                           ),
-                                          child: Text('Tracking ID : 1234567890', style: GoogleFonts.workSans(fontSize: 16,fontWeight: FontWeight.w500,color: const Color.fromRGBO(51, 51, 51, 1)),),
+                                          child: Text('Tracking ID : 1234567890', style: GoogleFonts.workSans(fontSize: 12,fontWeight: FontWeight.w500,color: const Color.fromRGBO(51, 51, 51, 1)),),
                                         ),
                                         Row(
                                           children: [
@@ -320,17 +322,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                                 children: [
                                                   Padding(
                                                     padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                    child: Text('Destination', style: GoogleFonts.workSans(fontSize: 16,fontWeight: FontWeight.w400,color: const Color.fromRGBO(108, 117, 125, 1)),),
+                                                    child: Text('Destination', style: GoogleFonts.workSans(fontSize: 14,fontWeight: FontWeight.w400,color: const Color.fromRGBO(108, 117, 125, 1)),),
                                                   ),
                                                   const SizedBox(height: 6,),
                                                   Padding(
                                                     padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                    child: Text('Status', style: GoogleFonts.workSans(fontSize: 16,fontWeight: FontWeight.w400,color: const Color.fromRGBO(108, 117, 125, 1)),),
-                                                  ),
-                                                  const SizedBox(height: 10,),
-                                                  Padding(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                                                    child: Text('Received On', style: GoogleFonts.workSans(fontSize: 16,fontWeight: FontWeight.w400,color: const Color.fromRGBO(108, 117, 125, 1)),),
+                                                    child: Text('Status', style: GoogleFonts.workSans(fontSize: 14,fontWeight: FontWeight.w400,color: const Color.fromRGBO(108, 117, 125, 1)),),
                                                   ),
                                                 ],
                                               ),
@@ -345,18 +342,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     padding: const EdgeInsets.only(right: 0),
                                                     child: SizedBox(
                                                         width: MediaQuery.of(context).size.width * 0.5,
-                                                        child: Text('ELM Street, Spring ', style: GoogleFonts.workSans(fontSize: 16,fontWeight: FontWeight.w500,color: const Color.fromRGBO(51, 51, 51, 1)),overflow: TextOverflow.ellipsis,)),
+                                                        child: Text('ELM Street, Spring ', style: GoogleFonts.workSans(fontSize: 14,fontWeight: FontWeight.w500,color: const Color.fromRGBO(51, 51, 51, 1)),overflow: TextOverflow.ellipsis,)),
                                                   ),
                                                   const SizedBox(height: 10,),
                                                   Padding(
                                                     padding: const EdgeInsets.only(right: 0),
-                                                    child: Text('Pending', style: GoogleFonts.workSans(fontSize: 16,fontWeight: FontWeight.w500,color: const Color.fromRGBO(51, 51, 51, 1)),),
+                                                    child: Text('Pending', style: GoogleFonts.workSans(fontSize: 14,fontWeight: FontWeight.w500,color: const Color.fromRGBO(51, 51, 51, 1)),),
                                                   ),
-                                                  const SizedBox(height: 10,),
-                                                  Padding(
-                                                    padding: const EdgeInsets.only(right: 10),
-                                                    child: Text('06th June', style: GoogleFonts.workSans(fontSize: 16,fontWeight: FontWeight.w500,color: const Color.fromRGBO(51, 51, 51, 1)),),
-                                                  ),
+                                                  // const SizedBox(height: 10,),
                                                 ],
                                               ),
                                             ),
@@ -387,6 +380,80 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ],
                                         ),
                                         const SizedBox(height: 10,),
+                                  Container(
+                                    decoration: BoxDecoration(
+                                      color: Theme.of(context).colorScheme.inversePrimary.withOpacity(0.0),
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment: MainAxisAlignment.center,
+                                      children: [
+                                        SizedBox(
+                                          width: double.maxFinite,
+                                          height: 60, // Increase height to accommodate labels
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(horizontal: 7),
+                                            child: Column(
+                                              children: [
+                                                FlutterStepIndicator(
+                                                  height: 28,
+                                                  paddingLine: const EdgeInsets.symmetric(horizontal: 0),
+                                                  positiveColor: const Color(0xFF00B551),
+                                                  progressColor: const Color(0xFFEA9C00),
+                                                  negativeColor: const Color(0xFFD5D5D5),
+                                                  padding: const EdgeInsets.all(4),
+                                                  list: list,
+                                                  division: counter,
+                                                  onChange: (i) {},
+                                                  page: page,
+                                                  onClickItem: (p0) {
+                                                    setState(() {
+                                                      page = p0;
+                                                    });
+                                                  },
+                                                ),
+                                                const SizedBox(height: 10), // Add some spacing between indicator and labels
+                                                Row(
+                                                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                                  children: stepLabels.map((label) {
+                                                    return Expanded(
+                                                      child: Text(
+                                                        label,
+                                                        textAlign: TextAlign.center,
+                                                        style: TextStyle(
+                                                          fontSize: 12,
+                                                          color: page == stepLabels.indexOf(label)
+                                                              ? Colors.black
+                                                              : Colors.grey,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ],
+                                            ),
+                                          ),
+                                        ),
+                                        // Uncomment and use this if needed for additional options
+                                        // widgetOption(
+                                        //   title: "update step ($page)",
+                                        //   callAdd: () {
+                                        //     if (page < list.length) {
+                                        //       setState(() {
+                                        //         page++;
+                                        //       });
+                                        //     }
+                                        //   },
+                                        //   callRemove: () {
+                                        //     if (page > 0) {
+                                        //       setState(() {
+                                        //         page--;
+                                        //       });
+                                        //     }
+                                        //   },
+                                        // ),
+                                      ],
+                                    ),
+                                  ),
                                       ],
                                     ),
                                   ),
@@ -407,5 +474,40 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
     );
   }
-
+  int page = 1;
+  int counter = 3;
+  List list = [0,1,2,3,];
+  List<String> stepLabels = ["Placed", "Picked up", "In Transit", "Delivered"];
+  Widget widgetOption({required String title,required VoidCallback callAdd,required VoidCallback callRemove}){
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 5,vertical: 10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 5,vertical: 10),
+        decoration: BoxDecoration(
+            color: Colors.blueGrey.withOpacity(0.03),
+            borderRadius: BorderRadius.circular(15)
+        ),
+        child: Column(
+          children: [
+            Container(width: double.maxFinite,height: 30,
+              alignment: Alignment.center,
+              child: Text(title,style: const TextStyle(fontWeight: FontWeight.bold),),
+            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                ElevatedButton(
+                    onPressed: callAdd,
+                    child: const Icon(Icons.add)),
+                ElevatedButton(
+                    onPressed: callRemove,
+                    child: const Icon(Icons.remove)),
+              ],
+            )
+          ],
+        ),
+      ),
+    );
+  }
 }
+
