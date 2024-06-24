@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:logmax/features/home/home_screen.dart';
+import 'package:logmax/features/home/track_courier/track_courier_screen.dart';
 import 'package:logmax/features/notification/notification_screen.dart';
 
 import '../features/profile/profile_screen.dart';
@@ -20,7 +21,8 @@ class _BottomBarState extends State<BottomBar> {
   late int currentIndex;
   final List<Widget> _pages = [
     HomeScreen(onExit: () {}),
-    const PickUpScreen(),
+    const TrackCourierListScreen(),
+    // const PickUpScreen(),
     const ProfileScreen(),
   ];
 
@@ -60,17 +62,12 @@ class _BottomBarState extends State<BottomBar> {
               Color svgColor = const Color.fromRGBO(188, 188, 188, 1);
               Color textColor = const Color.fromRGBO(188, 188, 188, 1);
               // Increase height and set color for the Rectangle SVG
-              if (index == 1) {
-                svgHeight = size.width * .077;
-                svgColor = Colors.red;
-              } else {
                 svgColor = index == currentIndex
                     ? const Color.fromRGBO(0, 0, 0, 1)
                     : const Color.fromRGBO(188, 188, 188, 1);
                 textColor = index == currentIndex
                     ? const Color.fromRGBO(0, 0, 0, 1)
                     : const Color.fromRGBO(188, 188, 188, 1);
-              }
 
               return InkWell(
                 onTap: () {
@@ -109,12 +106,6 @@ class _BottomBarState extends State<BottomBar> {
                           height: svgHeight,
                           color: svgColor,
                         ),
-                        if (index == 1)
-                          Icon(
-                            Icons.add,
-                            size: svgHeight / 1,
-                            color: Colors.white,
-                          ),
                       ],
                     ),
                     SizedBox(height: size.width * 0),
@@ -137,12 +128,12 @@ class _BottomBarState extends State<BottomBar> {
 
   final List<String> svgAssets = [
     "assets/images/home.svg",
-    'assets/images/Rectangle.svg',
+    'assets/images/track.svg',
     'assets/images/profile.svg',
   ];
   final List<String> listOfTexts = [
     'Home',
-    '',
+    'Track Courier',
     'Profile',
   ];
 }
